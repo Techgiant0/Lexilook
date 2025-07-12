@@ -131,7 +131,8 @@ body.dark-mode #search-bar{
 }
 
 body.dark-mode #word{
-    background-color: white;
+    background-color: #243647;
+    color: white;
 }
 
 body.dark-mode #logo{
