@@ -31,13 +31,22 @@ document.addEventListener('DOMContentLoaded', async() => {
             const word = result[0];
             console.log("Fetched word:", word);
 
-            const time = Date.now()
-            localStorage.setItem('lastfetch', time)
-            localStorage.setItem('word', word)
+            // Fetch dictionary data for the new word
+            const dictionaryResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            if(!dictionaryResponse.ok) {
+                throw new Error(`HTTP error! status: ${dictionaryResponse.status}`);
+            }
+            const dictionaryData = await dictionaryResponse.json();
 
-            return word;
+            // Store everything in localStorage
+            const timeStamp = Date.now();
+            localStorage.setItem('lastfetch', timeStamp);
+            localStorage.setItem('word', word);
+            localStorage.setItem('dictionaryData', JSON.stringify(dictionaryData));
+
+            return { word, dictionaryData };
         } catch (error) {
-            console.error("Failed to fetch word:", error);
+            console.error("Failed to fetch data:", error);
         }
     }
 
@@ -57,14 +66,20 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 
     try {
-        const fetchWord = localStorage.getItem('word')
-        const req = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${fetchWord}`)
+        let dictionaryData;
+        const fetchWord = localStorage.getItem('word');
+        const cachedDictionaryData = localStorage.getItem('dictionaryData');
 
-        if(!req.ok){
-            throw new Error(`HTTP error! status: ${req.status}`)
+        if (cachedDictionaryData) {
+            dictionaryData = JSON.parse(cachedDictionaryData);
+        } else {
+            // Fallback fetch if cache somehow missing
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${fetchWord}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            dictionaryData = await response.json();
         }
 
-        const res = await req.json()
+        const res = dictionaryData;
         console.log(res[0])
 
         wordTitle.textContent = fetchWord
