@@ -6,6 +6,7 @@ const wordTitle = document.getElementById('word-title')
 const speakerIcon = document.getElementById('speaker-icon')
 const wordExplanationSection = document.getElementById('word-explanation-section')
 const unavail = document.getElementById('unavail')
+const searchBar = document.getElementById('word')
 
 lightMode.addEventListener('click', ()=>{
     body.classList.add('dark-mode')
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         async function getDailyWords() {
         // Fetch a random word from the API
         try {
-            const response = await fetch('https://random-word-api.vercel.app/api?words=1');
+            const response = await fetch('https://random-word-api.vercel.app/api?words=1&type=capitalized');
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         const currentTime = Date.now()
         const savedTime = Number(lastFetchTime)
         const timeDifference = currentTime - savedTime
-        const oneDayInMilliseconds = 86400000; // 24 hours in milliseconds
+        const oneDayInMilliseconds = 1000 //86400000; // 24 hours in milliseconds
 
         if(timeDifference > oneDayInMilliseconds){
             await getDailyWords()
@@ -68,8 +69,8 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         wordTitle.textContent = fetchWord
         speakerIcon.addEventListener('click', () => {
-            let audio = res[0].phonetics[0].audio
-            localStorage.setItem('audio', audio.src);
+            let audio = (res[0].phonetics && res[0].phonetics.length > 0) ? res[0].phonetics[0].audio : null;
+            localStorage.setItem('audio', audio);
             if(!audio){
                 unavail.style.display = 'block'
                 setTimeout(function() {
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async() => {
                 }, 3000);
             }else{
                 audio = new Audio(`${audio}`)
-                audio.play().catch(error => console.error(error.message));
+                audio.play().catch(error => console.error(error));
             }
            
         });
@@ -85,15 +86,17 @@ document.addEventListener('DOMContentLoaded', async() => {
         const phonetics = res[0].phonetics.length
         localStorage.setItem('phonetics', phonetics)
 
-        if(phonetics === 0){
+        if(!phonetics){
             const p = document.createElement('p')
-            p.innerHTML = `<span class="word-pronunciation" style='font-style:italic;'>No pronunciation available</span>`
+            p.className = 'word-pronunciation'
+            p.innerHTML = `No pronunciation available for this word`
             pronunciationSection.appendChild(p)
         }else{
             for(i=0; i < phonetics; i++){
             if(i < phonetics){
                 const li = document.createElement('li')
-                li.innerHTML = `<span class="word-pronunciation">${res[0].phonetics[i].text}</span>`
+                li.className = 'word-pronunciation'
+                li.innerHTML = `${res[0].phonetics[i].text}`
                 pronunciationSection.appendChild(li)              
             }
         }
@@ -104,17 +107,23 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         if(!definition){
             const p = document.createElement('p')
-            p.innerHTML = `<span class="word-explanation" style='font-style:italic;'>No definition available for this word</span>`
+            p.className = 'word-explanation'
+            p.innerHTML = `No definition available for this word`
             wordExplanationSection.appendChild(p)
         }else{
             for(i=0; i < definition; i++){
-            const p = document.createElement('p')
-            p.innerHTML = `<span class="word-explanation">${res[0].meanings[i].definitions[i].definition}</span>`
-            wordExplanationSection.appendChild(p)
-        }
+                const meaningDefinitions = res[0].meanings[i].definitions;
+                for(let j=0; j < meaningDefinitions.length; j++){
+                    const p = document.createElement('p')
+                    p.className = 'word-explanation'
+                    p.innerHTML = `${meaningDefinitions[j].definition}`
+                    wordExplanationSection.appendChild(p)
+                }
+            }
         }
 
     } catch (error) {
         console.error(`Error Fetching Word ${error}`)
     }
 });
+

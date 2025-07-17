@@ -101,7 +101,13 @@ input::placeholder{
 }
 
 #word-explanation{
-    line-height: 2;
+    line-height: 3;
+}
+
+#word-explanation-section{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .word-title-section{
