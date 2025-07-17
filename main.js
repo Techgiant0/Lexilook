@@ -4,7 +4,7 @@ const darkMode = document.getElementById('dark')
 const pronunciationSection = document.getElementById('pronunciation-section')
 const wordTitle = document.getElementById('word-title')
 const speakerIcon = document.getElementById('speaker-icon')
-const wordExplanation = document.getElementById('word-explanation')
+const wordExplanationSection = document.getElementById('word-explanation-section')
 const unavail = document.getElementById('unavail')
 
 lightMode.addEventListener('click', ()=>{
@@ -89,14 +89,29 @@ document.addEventListener('DOMContentLoaded', async() => {
             const p = document.createElement('p')
             p.innerHTML = `<span class="word-pronunciation" style='font-style:italic;'>No pronunciation available</span>`
             pronunciationSection.appendChild(p)
-        }
-
-        for(i=0; i < phonetics; i++){
+        }else{
+            for(i=0; i < phonetics; i++){
             if(i < phonetics){
                 const li = document.createElement('li')
                 li.innerHTML = `<span class="word-pronunciation">${res[0].phonetics[i].text}</span>`
                 pronunciationSection.appendChild(li)              
             }
+        }
+        }
+
+        const definition = res[0].meanings.length
+        localStorage.setItem('definition', definition)
+
+        if(!definition){
+            const p = document.createElement('p')
+            p.innerHTML = `<span class="word-explanation" style='font-style:italic;'>No definition available for this word</span>`
+            wordExplanationSection.appendChild(p)
+        }else{
+            for(i=0; i < definition; i++){
+            const p = document.createElement('p')
+            p.innerHTML = `<span class="word-explanation">${res[0].meanings[i].definitions[i].definition}</span>`
+            wordExplanationSection.appendChild(p)
+        }
         }
 
     } catch (error) {
