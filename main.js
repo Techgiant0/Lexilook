@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         const currentTime = Date.now()
         const savedTime = Number(lastFetchTime)
         const timeDifference = currentTime - savedTime
-        const oneDayInMilliseconds = 1000 //86400000; // 24 hours in milliseconds
+        const oneDayInMilliseconds = 86400000; // 24 hours in milliseconds
 
         if(timeDifference > oneDayInMilliseconds){
             await getDailyWords()
