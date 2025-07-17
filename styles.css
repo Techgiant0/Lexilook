@@ -121,6 +121,20 @@ input::placeholder{
     cursor: pointer;
 }
 
+.word-pronunciation-section{
+    margin-bottom: 20px; 
+}
+
+.word-pronunciation-title{
+    font-style: italic;
+    font-weight: 600;
+}
+
+#unavail{
+    font-style: italic;
+    display: none;
+}
+
 body.dark-mode{
     background-color: #121A21;
     color: #ffffff;
