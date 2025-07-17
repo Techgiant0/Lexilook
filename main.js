@@ -68,15 +68,15 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         wordTitle.textContent = fetchWord
         speakerIcon.addEventListener('click', () => {
-            const audio = res[0].phonetics[0].audio
+            let audio = res[0].phonetics[0].audio
             localStorage.setItem('audio', audio.src);
-            if(!audio.src){
+            if(!audio){
                 unavail.style.display = 'block'
                 setTimeout(function() {
                     unavail.style.display = 'none';
                 }, 3000);
             }else{
-                audio = new Audio(`https://api.dictionaryapi.dev/media/pronunciations/en/${fetchWord}-us.mp3`)
+                audio = new Audio(`${audio}`)
                 audio.play().catch(error => console.error(error.message));
             }
            
