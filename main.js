@@ -9,6 +9,7 @@ const unavail = document.getElementById('unavail')
 const searchBar = document.getElementById('word')
 const searchIcon = document.getElementById('search')
 const dayWord = document.getElementById('dayWord')
+const alertBox = document.getElementById('alert')
 
 lightMode.addEventListener('click', ()=>{
     body.classList.add('dark-mode')
@@ -147,40 +148,58 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 });
 
-searchIcon.addEventListener('click', async()=>{
-    dayWord.style.display = 'none'
+// Extract search functionality into a separate function
+async function performSearch() {
     let wordToSearch = searchBar.value;
-    const wordSearchRequest = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordToSearch}`)
-    if(!wordSearchRequest.ok) throw new Error(`HTTP error! status: ${wordSearchRequest.status}`)
-    const wordSearchResponse = await wordSearchRequest.json()
+    if(!wordToSearch){
+        alertBox.textContent = 'Please enter a word to search'
+        alertBox.style.display = 'block'
+        setTimeout(function() {
+            alertBox.style.display = 'none';
+        }, 3000);
+        return;
+    }else if(typeof wordToSearch !== 'string' || wordToSearch.trim() === ''){
+        alertBox.textContent = 'Please enter a valid word'
+        alertBox.style.display = 'block'
+        setTimeout(function() {
+            alertBox.style.display = 'none';
+        },3000)
+        return;
+    }
     
-    wordTitle.textContent = wordSearchResponse[0].word
+    try {
+        dayWord.style.display = 'none'
+        const wordSearchRequest = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordToSearch.trim()}`)
+        if(!wordSearchRequest.ok) throw new Error(`HTTP error! status: ${wordSearchRequest.status}`)
+        const wordSearchResponse = await wordSearchRequest.json()
+        
+        wordTitle.textContent = wordSearchResponse[0].word
 
-    pronunciationSection.innerHTML = ''; // Clear previous pronunciations
-    const phonetics = wordSearchResponse[0].phonetics.length
-    if(!phonetics){
-        const p = document.createElement('p')
-        p.className = 'word-pronunciation'
-        p.innerHTML = `No pronunciation available for this word`
-        pronunciationSection.appendChild(p)
-    }else{
-        for(i=0; i < phonetics; i++){
-            if(i < phonetics){
-                if(!wordSearchResponse[0].phonetics[i].text){
-                    continue;
+        pronunciationSection.innerHTML = ''; // Clear previous pronunciations
+        const phonetics = wordSearchResponse[0].phonetics.length
+        if(!phonetics){
+            const p = document.createElement('p')
+            p.className = 'word-pronunciation'
+            p.innerHTML = `No pronunciation available for this word`
+            pronunciationSection.appendChild(p)
+        }else{
+            for(i=0; i < phonetics; i++){
+                if(i < phonetics){
+                    if(!wordSearchResponse[0].phonetics[i].text){
+                        continue;
+                    }
+                    const li = document.createElement('li')
+                    li.className = 'word-pronunciation'
+                    li.innerHTML = `${wordSearchResponse[0].phonetics[i].text}`
+                    pronunciationSection.appendChild(li)    
                 }
-                const li = document.createElement('li')
-                li.className = 'word-pronunciation'
-                li.innerHTML = `${wordSearchResponse[0].phonetics[i].text}`
-                pronunciationSection.appendChild(li)    
             }
         }
-        }
 
-    wordExplanationSection.innerHTML = ''; // Clear previous explanations
-    const definition = wordSearchResponse[0].meanings.length
+        wordExplanationSection.innerHTML = ''; // Clear previous explanations
+        const definition = wordSearchResponse[0].meanings.length
 
-     if(!definition){
+        if(!definition){
             const p = document.createElement('p')
             p.className = 'word-explanation'
             p.innerHTML = `No definition available for this word`
@@ -197,7 +216,7 @@ searchIcon.addEventListener('click', async()=>{
             }
         }
 
-        speakerIcon.addEventListener('click', () => {
+        speakerIcon.onclick = () => {
             let audio = (wordSearchResponse[0].phonetics && wordSearchResponse[0].phonetics.length > 0) ? wordSearchResponse[0].phonetics[0].audio : null;
             localStorage.setItem('audio', audio);
             if(!audio){
@@ -209,6 +228,22 @@ searchIcon.addEventListener('click', async()=>{
                 audio = new Audio(`${audio}`)
                 audio.play().catch(error => console.error(error));
             }
-           
-        });
-})
+        };
+    } catch (error) {
+        alertBox.textContent = 'Word not found'
+        alertBox.style.display = 'block'
+        setTimeout(function() {
+            alertBox.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// Add click event listener
+searchIcon.addEventListener('click', performSearch);
+
+// Add keypress event listener for Enter key
+searchBar.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        performSearch();
+    }
+});

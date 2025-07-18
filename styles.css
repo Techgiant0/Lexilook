@@ -94,6 +94,19 @@ input::placeholder{
     margin: 10px;
 }
 
+.alert{
+    padding: 12px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    display: none;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
 .word-section{
     margin-top: 20px;
     text-align: left;
