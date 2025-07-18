@@ -90,6 +90,10 @@ input::placeholder{
     color: #4A739C;
 }
 
+.dayWord{
+    margin: 10px;
+}
+
 .word-section{
     margin-top: 20px;
     text-align: left;

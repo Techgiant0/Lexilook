@@ -7,6 +7,8 @@ const speakerIcon = document.getElementById('speaker-icon')
 const wordExplanationSection = document.getElementById('word-explanation-section')
 const unavail = document.getElementById('unavail')
 const searchBar = document.getElementById('word')
+const searchIcon = document.getElementById('search')
+const dayWord = document.getElementById('dayWord')
 
 lightMode.addEventListener('click', ()=>{
     body.classList.add('dark-mode')
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         if (cachedDictionaryData) {
             dictionaryData = JSON.parse(cachedDictionaryData);
         } else {
-            // Fallback fetch if cache somehow missing
+            // Fallback fetch if cache is missing
             const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${fetchWord}`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             dictionaryData = await response.json();
@@ -109,6 +111,9 @@ document.addEventListener('DOMContentLoaded', async() => {
         }else{
             for(i=0; i < phonetics; i++){
             if(i < phonetics){
+                if(!res[0].phonetics[i].text){
+                    continue;
+                }  
                 const li = document.createElement('li')
                 li.className = 'word-pronunciation'
                 li.innerHTML = `${res[0].phonetics[i].text}`
@@ -142,3 +147,68 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 });
 
+searchIcon.addEventListener('click', async()=>{
+    dayWord.style.display = 'none'
+    let wordToSearch = searchBar.value;
+    const wordSearchRequest = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordToSearch}`)
+    if(!wordSearchRequest.ok) throw new Error(`HTTP error! status: ${wordSearchRequest.status}`)
+    const wordSearchResponse = await wordSearchRequest.json()
+    
+    wordTitle.textContent = wordSearchResponse[0].word
+
+    pronunciationSection.innerHTML = ''; // Clear previous pronunciations
+    const phonetics = wordSearchResponse[0].phonetics.length
+    if(!phonetics){
+        const p = document.createElement('p')
+        p.className = 'word-pronunciation'
+        p.innerHTML = `No pronunciation available for this word`
+        pronunciationSection.appendChild(p)
+    }else{
+        for(i=0; i < phonetics; i++){
+            if(i < phonetics){
+                if(!wordSearchResponse[0].phonetics[i].text){
+                    continue;
+                }
+                const li = document.createElement('li')
+                li.className = 'word-pronunciation'
+                li.innerHTML = `${wordSearchResponse[0].phonetics[i].text}`
+                pronunciationSection.appendChild(li)    
+            }
+        }
+        }
+
+    wordExplanationSection.innerHTML = ''; // Clear previous explanations
+    const definition = wordSearchResponse[0].meanings.length
+
+     if(!definition){
+            const p = document.createElement('p')
+            p.className = 'word-explanation'
+            p.innerHTML = `No definition available for this word`
+            wordExplanationSection.appendChild(p)
+        }else{
+            for(i=0; i < definition; i++){
+                const meaningDefinitions = wordSearchResponse[0].meanings[i].definitions;
+                for(let j=0; j < meaningDefinitions.length; j++){
+                    const p = document.createElement('p')
+                    p.className = 'word-explanation'
+                    p.innerHTML = `${meaningDefinitions[j].definition}`
+                    wordExplanationSection.appendChild(p)
+                }
+            }
+        }
+
+        speakerIcon.addEventListener('click', () => {
+            let audio = (wordSearchResponse[0].phonetics && wordSearchResponse[0].phonetics.length > 0) ? wordSearchResponse[0].phonetics[0].audio : null;
+            localStorage.setItem('audio', audio);
+            if(!audio){
+                unavail.style.display = 'block'
+                setTimeout(function() {
+                    unavail.style.display = 'none';
+                }, 3000);
+            }else{
+                audio = new Audio(`${audio}`)
+                audio.play().catch(error => console.error(error));
+            }
+           
+        });
+})
