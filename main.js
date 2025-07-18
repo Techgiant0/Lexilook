@@ -217,15 +217,15 @@ async function performSearch() {
         }
 
         speakerIcon.onclick = () => {
-            let audio = (wordSearchResponse[0].phonetics && wordSearchResponse[0].phonetics.length > 0) ? wordSearchResponse[0].phonetics[0].audio : null;
-            localStorage.setItem('audio', audio);
-            if(!audio){
+            const phonetics = wordSearchResponse[0].phonetics;
+            const audioUrl = phonetics.find(p => p.audio && p.audio.trim() !== '')?.audio;
+            if(!audioUrl){
                 unavail.style.display = 'block'
                 setTimeout(function() {
                     unavail.style.display = 'none';
                 }, 3000);
             }else{
-                audio = new Audio(`${audio}`)
+                const audio = new Audio(audioUrl);
                 audio.play().catch(error => console.error(error));
             }
         };
