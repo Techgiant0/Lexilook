@@ -87,18 +87,16 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         wordTitle.textContent = fetchWord
         speakerIcon.onclick = () => {
-            let audio = (res[0].phonetics && res[0].phonetics.length > 0) ? res[0].phonetics[0].audio : null;
-            localStorage.setItem('audio', audio);
-            if(!audio){
+            const audioUrl = res[0].phonetics.find(p => p.audio && p.audio.trim() !== '')?.audio;
+            if(!audioUrl){
                 unavail.style.display = 'block'
                 setTimeout(function() {
                     unavail.style.display = 'none';
                 }, 3000);
             }else{
-                audio = new Audio(`${audio}`)
+                const audio = new Audio(audioUrl);
                 audio.play().catch(error => console.error(error));
             }
-           
         };
 
         const phonetics = res[0].phonetics.length
